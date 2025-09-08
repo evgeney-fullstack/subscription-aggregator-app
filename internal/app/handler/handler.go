@@ -26,6 +26,15 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 	router := gin.New()
 
-	return router
+	// Create a route group for subscription-related endpoints
+	subscriptions := router.Group("/subscriptions")
+	{
+		subscriptions.POST("/", h.createSubscription)                   //Create a new subscription
+		subscriptions.GET("/", h.getAllSubscriptions)                   //Retrieve all subscriptions
+		subscriptions.GET("/:subscription_id", h.getSubscriptionById)   //Get a specific subscription by ID
+		subscriptions.PUT("/:subscription_id", h.updateSubscription)    //Update an existing subscription
+		subscriptions.DELETE("/:subscription_id", h.deleteSubscription) //Delete a subscription
+	}
 
+	return router
 }
