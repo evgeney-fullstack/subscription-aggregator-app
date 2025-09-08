@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	subscriptionTable = "subscription" // Database table name for subscriptions
+	subscriptionTable = "subscriptions" // Database table name for subscriptions
 )
 
 // Config holds PostgreSQL connection configuration parameters

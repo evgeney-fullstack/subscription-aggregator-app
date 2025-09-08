@@ -1,12 +1,13 @@
 package postgres
 
 import (
+	"github.com/evgeney-fullstack/subscription-aggregator-app/internal/app/models"
 	"github.com/jmoiron/sqlx"
 )
 
 // SubscriptionStore defines CRUD operations for subscription management
 type SubscriptionStore interface {
-	Create()
+	Create(sub models.SubscriptionDB) (int, error)
 	GetAll()
 	GetById()
 	Delete()

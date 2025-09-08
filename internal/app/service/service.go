@@ -1,10 +1,13 @@
 package service
 
-import "github.com/evgeney-fullstack/subscription-aggregator-app/internal/app/repository/postgres"
+import (
+	"github.com/evgeney-fullstack/subscription-aggregator-app/internal/app/models"
+	"github.com/evgeney-fullstack/subscription-aggregator-app/internal/app/repository/postgres"
+)
 
 // SubscriptionStore defines business logic operations for subscriptions
 type SubscriptionStore interface {
-	Create()
+	Create(sub models.Subscription) (int, error)
 	GetAll()
 	GetById()
 	Delete()
