@@ -1,7 +1,9 @@
 package postgres
 
 import (
+	"context"
 	"fmt"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -20,22 +22,36 @@ type Config struct {
 	SSLMode  string
 }
 
-// NewPostgresDB creates a new PostgreSQL database connection
+// NewPostgresDB creates a new PostgreSQL database connection with context support
 // Returns sqlx.DB instance or error if connection fails
 func NewPostgresDB(cfg Config) (*sqlx.DB, error) {
-	// Format connection string from configuration parameters
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
 	connectionString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		cfg.Host, cfg.Port, cfg.Username, cfg.Password, cfg.DBName, cfg.SSLMode)
 
-	db, err := sqlx.Open("postgres", connectionString)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open database connection: %w", err)
+	var db *sqlx.DB
+	var err error
+
+	// Retry logic for connection
+	for i := 0; i < 3; i++ {
+		db, err = sqlx.Open("postgres", connectionString)
+		if err != nil {
+			time.Sleep(time.Duration(i+1) * time.Second)
+			continue
+		}
+
+		if err = db.PingContext(ctx); err != nil {
+			time.Sleep(time.Duration(i+1) * time.Second)
+			continue
+		}
+
+		break
 	}
 
-	// Verify connection with ping
-	err = db.Ping()
 	if err != nil {
-		return nil, fmt.Errorf("database ping failed: %w", err)
+		return nil, fmt.Errorf("failed to connect after retries: %w", err)
 	}
 
 	return db, nil
