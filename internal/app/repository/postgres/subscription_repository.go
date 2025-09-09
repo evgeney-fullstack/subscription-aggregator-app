@@ -60,8 +60,14 @@ func (r *SubscriptionRepository) GetAll() ([]models.SubscriptionDB, error) {
 }
 
 // GetById implements retrieval of subscription by ID (to be implemented)
-func (r *SubscriptionRepository) GetById() {
+func (r *SubscriptionRepository) GetById(subID int) (models.SubscriptionDB, error) {
 
+	var subDB models.SubscriptionDB
+
+	query := fmt.Sprintf("SELECT * FROM %s WHERE id = $1", subscriptionTable)
+	err := r.db.Get(&subDB, query, subID)
+
+	return subDB, err
 }
 
 // Delete implements subscription deletion logic (to be implemented)

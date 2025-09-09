@@ -86,8 +86,19 @@ func (s *SubscriptionService) GetAll() ([]*models.Subscription, error) {
 }
 
 // GetById implements business logic for retrieving subscription by ID (to be implemented)
-func (s *SubscriptionService) GetById() {
+func (s *SubscriptionService) GetById(subID int) (models.Subscription, error) {
+	var sub models.Subscription
 
+	// Retrieve  subscription by ID from the repository layer (database)
+	subDB, err := s.repo.GetById(subID)
+	if err != nil {
+		return sub, fmt.Errorf("failed to retrieve subscriptions from repository: %w", err)
+	}
+
+	// Convert each database model to API response model
+	sub = сonvertDBToAPIModel(subDB)
+
+	return sub, nil
 }
 
 // Delete implements subscription deletion business logic (to be implemented)

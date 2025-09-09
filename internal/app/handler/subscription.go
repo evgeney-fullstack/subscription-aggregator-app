@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/evgeney-fullstack/subscription-aggregator-app/internal/app/models"
 	"github.com/gin-gonic/gin"
@@ -58,8 +59,28 @@ func (h *Handler) getAllSubscriptions(c *gin.Context) {
 	})
 }
 
+// getSubscriptionById handles HTTP GET request to retrieve a specific subscription by ID
+// This endpoint returns a single subscription based on the provided subscription_id parameter
 func (h *Handler) getSubscriptionById(c *gin.Context) {
+	// Extract and convert subscription_id parameter from URL path to integer
+	// The parameter is expected to be in the format: /subscriptions/{subscription_id}
+	subID, err := strconv.Atoi(c.Param("subscription_id"))
+	if err != nil {
+		// Return 400 Bad Request if the parameter is not a valid integer
+		newErrorResponse(c, http.StatusBadRequest, "invalid subscription_id param")
+		return
+	}
 
+	// Retrieve the subscription from the service layer using the extracted ID
+	sub, err := h.services.SubscriptionStore.GetById(subID)
+	if err != nil {
+		// Return 500 Internal Server Error if data retrieval fails
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// Return 200 OK with the subscription data in JSON format
+	c.JSON(http.StatusOK, sub)
 }
 
 func (h *Handler) updateSubscription(c *gin.Context) {
