@@ -139,3 +139,29 @@ func (r *SubscriptionRepository) Update(subID int, input models.UpdateSubscripti
 	_, err := r.db.Exec(query, args...)
 	return err
 }
+
+// TotalCostResult holds the total cost result from the database query
+type TotalCostResult struct {
+	TotalCost int `db:"total_cost"`
+}
+
+// GetSubscriptionSummary calculates total subscription cost based on filters
+func (r *SubscriptionRepository) GetSubscriptionSummary(filter models.SubscriptionFilterDB) (int, error) {
+	query := fmt.Sprintf(`
+        SELECT COALESCE(SUM(price), 0) AS total_cost
+        FROM %s
+        WHERE 
+            (user_id = $1 OR $1 IS NULL) AND
+            (service_name = $2 OR $2 IS NULL) AND
+            start_date <= $4 AND 
+            finish_date >= $3
+    `, subscriptionTable)
+
+	var result TotalCostResult
+	err := r.db.Get(&result, query, filter.UserID, filter.ServiceName, filter.StartDate, filter.FinishDate)
+	if err != nil {
+		return 0, fmt.Errorf("failed to calculate total cost: %w", err)
+	}
+
+	return result.TotalCost, err
+}

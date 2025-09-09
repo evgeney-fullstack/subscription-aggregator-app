@@ -12,6 +12,7 @@ type SubscriptionStore interface {
 	GetById(subID int) (models.SubscriptionDB, error)
 	Delete(subID int) error
 	Update(subID int, input models.UpdateSubscription) error
+	GetSubscriptionSummary(filter models.SubscriptionFilterDB) (int, error)
 }
 
 // Repository aggregates all store interfaces for database operations

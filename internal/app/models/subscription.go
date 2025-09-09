@@ -47,3 +47,33 @@ func (i UpdateSubscription) Validate() error {
 
 	return nil
 }
+
+// SubscriptionFilter defines the request/response structure for subscription summary API
+// Used for both input parameters and output response
+type SubscriptionFilter struct {
+	TotalCost int     `json:"total_cost"` // Calculated total cost of subscriptions (output only)
+	Currency  string  `json:"currency"`   // Currency code for the total cost (output only)
+	Period    Period  `json:"period"`     // Time period for the summary calculation (input)
+	Filters   Filters `json:"filters"`    // Optional filters for the summary (input)
+}
+
+// Period defines the time range for subscription summary calculation
+type Period struct {
+	StartDate  string `json:"start_date" binding:"required"`  // Start date in MM-YYYY format
+	FinishDate string `json:"finish_date" binding:"required"` // End date in MM-YYYY format
+}
+
+// Filters contains optional criteria to narrow down subscription summary
+type Filters struct {
+	UserID      *string `json:"user_id"`      // Optional filter by user ID
+	ServiceName *string `json:"service_name"` // Optional filter by service name
+}
+
+// SubscriptionFilterDB is the database representation of subscription filters
+// Used to pass filter criteria to repository layer
+type SubscriptionFilterDB struct {
+	ServiceName *string   `db:"service_name"` // Service name filter (optional)
+	UserID      *string   `db:"user_id"`      // User ID filter (optional)
+	StartDate   time.Time `db:"start_date"`   // Start date in time.Time format
+	FinishDate  time.Time `db:"finish_date"`  // End date in time.Time format
+}
