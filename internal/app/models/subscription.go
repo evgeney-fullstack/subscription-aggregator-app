@@ -9,7 +9,7 @@ import (
 // Subscription represents the subscription model for API requests/responses
 // Used for JSON marshaling/unmarshaling with string-based date fields
 type Subscription struct {
-	Id          int    `json:"-" db:"id"`                       // Unique identifier (excluded from JSON)
+	Id          int    `json:"id" db:"id"`                      // Unique identifier
 	ServiceName string `json:"service_name" binding:"required"` // Name of the service (required)
 	Price       int    `json:"price" binding:"required"`        // Subscription price (required)
 	UserID      string `json:"user_id" binding:"required"`      // User identifier as string (required)

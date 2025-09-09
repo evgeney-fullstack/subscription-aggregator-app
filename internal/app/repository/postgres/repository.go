@@ -9,7 +9,7 @@ import (
 type SubscriptionStore interface {
 	Create(sub models.SubscriptionDB) (int, error)
 	GetAll() ([]models.SubscriptionDB, error)
-	GetById()
+	GetById(subID int) (models.SubscriptionDB, error)
 	Delete()
 	Update()
 }
