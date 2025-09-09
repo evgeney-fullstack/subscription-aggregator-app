@@ -23,32 +23,22 @@ func NewSubscriptionService(repo postgres.SubscriptionStore) *SubscriptionServic
 // Transforms API model (Subscription) to database model (SubscriptionDB)
 // Performs data validation and transformation before persistence
 func (s *SubscriptionService) Create(sub models.Subscription) (int, error) {
-	var subDB models.SubscriptionDB
 
 	// Parse string UserID from API request into UUID format for database storage
-	userID, err := uuid.Parse(sub.UserID)
+	_, err := uuid.Parse(sub.UserID)
 	if err != nil {
 		return 0, fmt.Errorf("invalid user ID format: %w", err)
 	}
 
 	// Parse string date from API request into time.Time object
 	// Uses "01-2006" format (month-year) following Go's reference date format
-	startData, err := time.Parse("01-2006", sub.StartDate)
+	_, err = time.Parse("01-2006", sub.StartDate)
 	if err != nil {
 		return 0, fmt.Errorf("invalid start date format, expected MM-YYYY: %w", err)
 	}
 
-	// Map fields from API model to database model
-	subDB.Price = sub.Price
-	subDB.ServiceName = sub.ServiceName
-	subDB.UserID = userID
-	subDB.StartDate = startData
-
-	// Calculate subscription end date (1 month duration from start date)
-	subDB.FinishDate = startData.AddDate(0, 1, 0)
-
 	// Delegate to repository layer for actual database persistence
-	return s.repo.Create(subDB)
+	return s.repo.Create(sub)
 }
 
 // ConvertDBToAPIModel transforms a database model to an API response model
@@ -115,6 +105,15 @@ func (s *SubscriptionService) Update(subID int, input models.UpdateSubscription)
 		return fmt.Errorf("validation failed: %w", err)
 	}
 
+	if input.StartDate != nil {
+		// Parse string date from API request into time.Time object
+		// Uses "01-2006" format (month-year) following Go's reference date format
+		_, err := time.Parse("01-2006", *input.StartDate)
+		if err != nil {
+			return fmt.Errorf("invalid start date format, expected MM-YYYY: %w", err)
+		}
+	}
+
 	// Delegate the update operation to the repository layer
 	// The repository handles the actual database interaction
 	return s.repo.Update(subID, input)
@@ -122,25 +121,5 @@ func (s *SubscriptionService) Update(subID int, input models.UpdateSubscription)
 
 // GetSubscriptionSummary converts API filters to DB format and calculates total cost
 func (s *SubscriptionService) GetSubscriptionSummary(filter models.SubscriptionFilter) (int, error) {
-	var filterDB models.SubscriptionFilterDB
-
-	// Parse string dates to time.Time for database query
-	startData, err := time.Parse("01-2006", filter.Period.StartDate)
-	if err != nil {
-		return 0, fmt.Errorf("invalid start date format, expected MM-YYYY: %w", err)
-	}
-
-	finishDate, err := time.Parse("01-2006", filter.Period.FinishDate)
-	if err != nil {
-		return 0, fmt.Errorf("invalid start date format, expected MM-YYYY: %w", err)
-	}
-
-	// Map filter parameters to database format
-	filterDB.ServiceName = filter.Filters.ServiceName
-	filterDB.UserID = filter.Filters.UserID
-	filterDB.StartDate = startData
-	filterDB.FinishDate = finishDate
-
-	// Delegate to repository for actual calculation
-	return s.repo.GetSubscriptionSummary(filterDB)
+	return s.repo.GetSubscriptionSummary(filter)
 }

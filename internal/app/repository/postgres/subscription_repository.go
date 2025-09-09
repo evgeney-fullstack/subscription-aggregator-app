@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/evgeney-fullstack/subscription-aggregator-app/internal/app/models"
 	"github.com/jmoiron/sqlx"
@@ -22,7 +21,7 @@ func NewSubscriptionRepository(db *sqlx.DB) *SubscriptionRepository {
 
 // Create inserts a new subscription record into the database
 // Returns the ID of the newly created subscription or an error
-func (r *SubscriptionRepository) Create(subDB models.SubscriptionDB) (int, error) {
+func (r *SubscriptionRepository) Create(subDB models.Subscription) (int, error) {
 	// Begin a database transaction to ensure atomic operation
 	tx, err := r.db.Begin()
 	if err != nil {
@@ -32,10 +31,10 @@ func (r *SubscriptionRepository) Create(subDB models.SubscriptionDB) (int, error
 	var subId int
 	// Prepare SQL query for subscription insertion with parameter binding
 	// Uses RETURNING clause to get the auto-generated ID
-	createSubQuery := fmt.Sprintf("INSERT INTO %s (service_name, price, user_id, start_date, finish_date) VALUES ($1, $2, $3, $4, $5) RETURNING id", subscriptionTable)
+	createSubQuery := fmt.Sprintf("INSERT INTO %s (service_name, price, user_id, start_date) VALUES ($1, $2, $3, TO_DATE($4, 'MM-YYYY')) RETURNING id", subscriptionTable)
 
 	// Execute the query within the transaction
-	row := tx.QueryRow(createSubQuery, subDB.ServiceName, subDB.Price, subDB.UserID, subDB.StartDate, subDB.FinishDate)
+	row := tx.QueryRow(createSubQuery, subDB.ServiceName, subDB.Price, subDB.UserID, subDB.StartDate)
 
 	// Retrieve the auto-generated ID from the result
 	if err := row.Scan(&subId); err != nil {
@@ -108,22 +107,11 @@ func (r *SubscriptionRepository) Update(subID int, input models.UpdateSubscripti
 
 	// Handle start date update if provided
 	if input.StartDate != nil {
-		setValues = append(setValues, fmt.Sprintf("start_date=$%d", argId))
+		setValues = append(setValues, fmt.Sprintf("start_date=TO_DATE($%d, 'MM-YYYY')", argId))
 
-		// Parse string date to time.Time for database storage
-		startData, err := time.Parse("01-2006", *input.StartDate)
-		if err != nil {
-			return fmt.Errorf("invalid start date format, expected MM-YYYY: %w", err)
-		}
-		args = append(args, startData)
+		args = append(args, *input.StartDate)
 		argId++
 
-		// Calculate subscription end date (1 month duration from start date)
-		finishDate := startData.AddDate(0, 1, 0)
-		setValues = append(setValues, fmt.Sprintf("finish_date=$%d", argId))
-
-		args = append(args, finishDate)
-		argId++
 	}
 
 	// Join SET clauses with commas
@@ -146,19 +134,19 @@ type TotalCostResult struct {
 }
 
 // GetSubscriptionSummary calculates total subscription cost based on filters
-func (r *SubscriptionRepository) GetSubscriptionSummary(filter models.SubscriptionFilterDB) (int, error) {
+func (r *SubscriptionRepository) GetSubscriptionSummary(filter models.SubscriptionFilter) (int, error) {
 	query := fmt.Sprintf(`
         SELECT COALESCE(SUM(price), 0) AS total_cost
         FROM %s
         WHERE 
             (user_id = $1 OR $1 IS NULL) AND
             (service_name = $2 OR $2 IS NULL) AND
-            start_date <= $4 AND 
-            finish_date >= $3
+            start_date <= TO_DATE($4, 'MM-YYYY') AND 
+            finish_date >= TO_DATE($3, 'MM-YYYY')
     `, subscriptionTable)
 
 	var result TotalCostResult
-	err := r.db.Get(&result, query, filter.UserID, filter.ServiceName, filter.StartDate, filter.FinishDate)
+	err := r.db.Get(&result, query, filter.Filters.UserID, filter.Filters.ServiceName, filter.Period.StartDate, filter.Period.FinishDate)
 	if err != nil {
 		return 0, fmt.Errorf("failed to calculate total cost: %w", err)
 	}

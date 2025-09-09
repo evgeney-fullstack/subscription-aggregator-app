@@ -7,12 +7,12 @@ import (
 
 // SubscriptionStore defines CRUD operations for subscription management
 type SubscriptionStore interface {
-	Create(sub models.SubscriptionDB) (int, error)
+	Create(sub models.Subscription) (int, error)
 	GetAll() ([]models.SubscriptionDB, error)
 	GetById(subID int) (models.SubscriptionDB, error)
 	Delete(subID int) error
 	Update(subID int, input models.UpdateSubscription) error
-	GetSubscriptionSummary(filter models.SubscriptionFilterDB) (int, error)
+	GetSubscriptionSummary(filter models.SubscriptionFilter) (int, error)
 }
 
 // Repository aggregates all store interfaces for database operations

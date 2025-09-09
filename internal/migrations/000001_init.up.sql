@@ -4,7 +4,7 @@ CREATE TABLE subscriptions (
     service_name VARCHAR(255) NOT NULL,
     price INT NOT NULL,
     user_id UUID ,
-    start_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    finish_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    start_date DATE NOT NULL,
+    finish_date DATE GENERATED ALWAYS AS (start_date + INTERVAL '1 month') STORED
 );
 

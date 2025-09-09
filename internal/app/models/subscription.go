@@ -15,7 +15,7 @@ type Subscription struct {
 	Price       int    `json:"price" binding:"required"`        // Subscription price (required)
 	UserID      string `json:"user_id" binding:"required"`      // User identifier as string (required)
 	StartDate   string `json:"start_date" binding:"required"`   // Start date in string format (required)
-	FinishDate  string `json:"finish_date"`                     // End date in string format (optional)
+	FinishDate  string `json:"finish_date"`                     // End date as timestamp
 }
 
 // SubscriptionDB represents the subscription model for database operations
