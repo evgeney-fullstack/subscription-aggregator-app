@@ -10,7 +10,7 @@ type SubscriptionStore interface {
 	Create(sub models.Subscription) (int, error)
 	GetAll() ([]*models.Subscription, error)
 	GetById(subID int) (models.Subscription, error)
-	Delete()
+	Delete(subID int) error
 	Update()
 }
 

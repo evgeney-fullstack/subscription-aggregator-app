@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/evgeney-fullstack/subscription-aggregator-app/internal/app/models"
@@ -71,7 +72,20 @@ func (r *SubscriptionRepository) GetById(subID int) (models.SubscriptionDB, erro
 }
 
 // Delete implements subscription deletion logic (to be implemented)
-func (r *SubscriptionRepository) Delete() {
+func (r *SubscriptionRepository) Delete(subID int) error {
+
+	query := fmt.Sprintf("DELETE FROM %s WHERE id = $1", subscriptionTable)
+	result, err := r.db.Exec(query, subID)
+	if err != nil {
+		return err
+	}
+
+	//Check if the card has been deleted
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return errors.New("card not found")
+	}
+	return nil
 
 }
 

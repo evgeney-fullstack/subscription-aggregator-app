@@ -102,8 +102,8 @@ func (s *SubscriptionService) GetById(subID int) (models.Subscription, error) {
 }
 
 // Delete implements subscription deletion business logic (to be implemented)
-func (s *SubscriptionService) Delete() {
-
+func (s *SubscriptionService) Delete(subID int) error {
+	return s.repo.Delete(subID)
 }
 
 // Update implements subscription update business logic (to be implemented)

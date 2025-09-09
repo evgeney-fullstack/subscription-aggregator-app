@@ -88,5 +88,27 @@ func (h *Handler) updateSubscription(c *gin.Context) {
 }
 
 func (h *Handler) deleteSubscription(c *gin.Context) {
+	// Extract and convert subscription_id parameter from URL path to integer
+	// The parameter is expected to be in the format: /subscriptions/{subscription_id}
+	subID, err := strconv.Atoi(c.Param("subscription_id"))
+	if err != nil {
+		// Return 400 Bad Request if the parameter is not a valid integer
+		newErrorResponse(c, http.StatusBadRequest, "invalid subscription_id param")
+		return
+	}
+
+	// Service will delete the subscription
+	err = h.services.SubscriptionStore.Delete(subID)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// Return HTTP 200 OK status with a success confirmation message
+	// This response is typically used for operations that don't require returning data,
+	// but need to confirm successful execution to the client
+	c.JSON(http.StatusOK, statusResponse{
+		Status: "Operation completed successfully",
+	})
 
 }
