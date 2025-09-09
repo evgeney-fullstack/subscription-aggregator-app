@@ -51,9 +51,38 @@ func (s *SubscriptionService) Create(sub models.Subscription) (int, error) {
 	return s.repo.Create(subDB)
 }
 
-// GetAll implements business logic for retrieving all subscriptions (to be implemented)
-func (s *SubscriptionService) GetAll() {
+// ConvertDBToAPIModel transforms a database model to an API response model
+func сonvertDBToAPIModel(subdb models.SubscriptionDB) models.Subscription {
+	return models.Subscription{
+		Id:          subdb.Id,
+		ServiceName: subdb.ServiceName,
+		Price:       subdb.Price,
+		UserID:      subdb.UserID.String(),
+		StartDate:   subdb.StartDate.Format("01-2006"),
+		FinishDate:  subdb.FinishDate.Format("01-2006"),
+	}
+}
 
+// GetAll retrieves all subscriptions from the repository and converts them to API model format
+// Returns a slice of Subscription models or an error if data retrieval fails
+func (s *SubscriptionService) GetAll() ([]*models.Subscription, error) {
+	// Retrieve all subscriptions from the repository layer (database)
+	subsDB, err := s.repo.GetAll()
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve subscriptions from repository: %w", err)
+	}
+
+	// Initialize slice for API response models
+	// Pre-allocate capacity for better performance with large datasets
+	subs := make([]*models.Subscription, 0, len(subsDB))
+
+	// Convert each database model to API response model
+	for i := range subsDB {
+		sub := сonvertDBToAPIModel(subsDB[i])
+		subs = append(subs, &sub)
+	}
+
+	return subs, nil
 }
 
 // GetById implements business logic for retrieving subscription by ID (to be implemented)

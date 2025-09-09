@@ -50,8 +50,13 @@ func (r *SubscriptionRepository) Create(subDB models.SubscriptionDB) (int, error
 }
 
 // GetAll implements retrieval of all subscriptions (to be implemented)
-func (r *SubscriptionRepository) GetAll() {
+func (r *SubscriptionRepository) GetAll() ([]models.SubscriptionDB, error) {
+	var subDB []models.SubscriptionDB
 
+	query := fmt.Sprintf("SELECT * FROM %s", subscriptionTable)
+	err := r.db.Select(&subDB, query)
+
+	return subDB, err
 }
 
 // GetById implements retrieval of subscription by ID (to be implemented)
