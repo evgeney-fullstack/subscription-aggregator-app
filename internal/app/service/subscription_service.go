@@ -102,11 +102,20 @@ func (s *SubscriptionService) GetById(subID int) (models.Subscription, error) {
 }
 
 // Delete implements subscription deletion business logic (to be implemented)
-func (s *SubscriptionService) Delete() {
-
+func (s *SubscriptionService) Delete(subID int) error {
+	return s.repo.Delete(subID)
 }
 
-// Update implements subscription update business logic (to be implemented)
-func (s *SubscriptionService) Update() {
+// Update handles the business logic for updating an existing subscription
+// Validates input data before delegating to the repository layer for persistence
+func (s *SubscriptionService) Update(subID int, input models.UpdateSubscription) error {
+	// Validate input data using the model's validation method
+	// This ensures business rules are enforced before database operations
+	if err := input.Validate(); err != nil {
+		return fmt.Errorf("validation failed: %w", err)
+	}
 
+	// Delegate the update operation to the repository layer
+	// The repository handles the actual database interaction
+	return s.repo.Update(subID, input)
 }
