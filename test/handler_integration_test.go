@@ -94,12 +94,12 @@ func setupTestServer(postgresCfg postgres.Config) (*gin.Engine, error) {
 	// Добавьте создание таблицы
 	_, err = db.Exec(`
         CREATE TABLE IF NOT EXISTS subscriptions (
-            id SERIAL PRIMARY KEY,
-            service_name VARCHAR(255) NOT NULL,
-            price INTEGER NOT NULL,
-            user_id UUID NOT NULL,
-            start_date TIMESTAMP NOT NULL,
-            finish_date TIMESTAMP NOT NULL
+    		id SERIAL PRIMARY KEY UNIQUE,
+    		service_name VARCHAR(255) NOT NULL,
+    		price INT NOT NULL,
+   			user_id UUID ,
+    		start_date DATE NOT NULL,
+   			finish_date DATE GENERATED ALWAYS AS (start_date + INTERVAL '1 month') STORED
         )
     `)
 	if err != nil {
@@ -182,7 +182,7 @@ func TestСreateSubscriptionIntegration(t *testing.T) {
 			},
 			expectedStatus: http.StatusInternalServerError,
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
-				assert.Contains(t, recorder.Body.String(), "invalid start date format")
+				assert.Contains(t, recorder.Body.String(), "invalid start date format, expected MM-YYYY:")
 			},
 		},
 		{

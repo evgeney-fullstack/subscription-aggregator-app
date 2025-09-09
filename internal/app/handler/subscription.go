@@ -136,3 +136,23 @@ func (h *Handler) deleteSubscription(c *gin.Context) {
 	})
 
 }
+
+func (h *Handler) getSubscriptionSummary(c *gin.Context) {
+
+	var filter models.SubscriptionFilter
+	if err := c.BindJSON(&filter); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	totalCost, err := h.services.SubscriptionStore.GetSubscriptionSummary(filter)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	filter.TotalCost = totalCost
+	filter.Currency = "RUB"
+
+	c.JSON(http.StatusOK, filter)
+}
