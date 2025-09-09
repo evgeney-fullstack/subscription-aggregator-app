@@ -8,7 +8,7 @@ import (
 // SubscriptionStore defines CRUD operations for subscription management
 type SubscriptionStore interface {
 	Create(sub models.SubscriptionDB) (int, error)
-	GetAll()
+	GetAll() ([]models.SubscriptionDB, error)
 	GetById()
 	Delete()
 	Update()

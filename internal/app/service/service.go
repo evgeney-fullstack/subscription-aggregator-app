@@ -8,7 +8,7 @@ import (
 // SubscriptionStore defines business logic operations for subscriptions
 type SubscriptionStore interface {
 	Create(sub models.Subscription) (int, error)
-	GetAll()
+	GetAll() ([]*models.Subscription, error)
 	GetById()
 	Delete()
 	Update()

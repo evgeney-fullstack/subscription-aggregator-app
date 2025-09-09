@@ -234,3 +234,111 @@ func TestСreateSubscriptionIntegration(t *testing.T) {
 		})
 	}
 }
+
+func TestGetAllSubscriptionsIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration tests in short mode")
+	}
+
+	ctx := context.Background()
+
+	dbConfig, cleanup, err := setupTestContainer(ctx)
+	if err != nil {
+		t.Fatalf("Failed to set up test container: %v", err)
+	}
+	defer cleanup()
+
+	router, err := setupTestServer(dbConfig)
+	if err != nil {
+		t.Fatalf("Failed to set up test server: %v", err)
+	}
+
+	tests := []struct {
+		name           string
+		payload        interface{}
+		expectedStatus int
+		checkResponse  func(t *testing.T, recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name: "Successful creation TEST1",
+			payload: map[string]interface{}{
+				"service_name": "TEST1",
+				"price":        200,
+				"user_id":      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
+				"start_date":   "06-2025",
+			},
+			expectedStatus: http.StatusOK,
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				assert.Contains(t, recorder.Body.String(), "subId")
+			},
+		},
+		{
+			name: "Successful creation TEST2",
+			payload: map[string]interface{}{
+				"service_name": "TEST2",
+				"price":        300,
+				"user_id":      "60691fee-2bf1-4721-ae6f-7036e79a0cba",
+				"start_date":   "07-2025",
+			},
+			expectedStatus: http.StatusOK,
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				assert.Contains(t, recorder.Body.String(), "subId")
+			},
+		},
+		{
+			name:           "Successful getAllSubscriptions",
+			payload:        map[string]interface{}{},
+			expectedStatus: http.StatusOK,
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				assert.Contains(t, recorder.Body.String(), "data")
+			},
+		},
+	}
+
+	cunter := 0
+
+	for _, tt := range tests {
+
+		if cunter < 2 {
+			t.Run(tt.name, func(t *testing.T) {
+				// Request preparation
+				body, _ := json.Marshal(tt.payload)
+				req, _ := http.NewRequest("POST", "/subscriptions/", bytes.NewBuffer(body))
+				req.Header.Set("Content-Type", "application/json")
+
+				// Request execution
+				recorder := httptest.NewRecorder()
+				router.ServeHTTP(recorder, req)
+
+				// Checking the response status
+				assert.Equal(t, tt.expectedStatus, recorder.Code)
+
+				// Checking the response body
+				if tt.checkResponse != nil {
+					tt.checkResponse(t, recorder)
+				}
+			})
+			cunter++
+		} else {
+			t.Run(tt.name, func(t *testing.T) {
+				// Request preparation
+				body, _ := json.Marshal(tt.payload)
+				req, _ := http.NewRequest("GET", "/subscriptions/", bytes.NewBuffer(body))
+				req.Header.Set("Content-Type", "application/json")
+
+				// Request execution
+				recorder := httptest.NewRecorder()
+				router.ServeHTTP(recorder, req)
+
+				// Checking the response status
+				assert.Equal(t, tt.expectedStatus, recorder.Code)
+
+				// Checking the response body
+				if tt.checkResponse != nil {
+					tt.checkResponse(t, recorder)
+				}
+			})
+
+		}
+	}
+}
