@@ -11,7 +11,7 @@ type SubscriptionStore interface {
 	GetAll() ([]*models.Subscription, error)
 	GetById(subID int) (models.Subscription, error)
 	Delete(subID int) error
-	Update()
+	Update(subID int, input models.UpdateSubscription) error
 }
 
 // Service layer aggregates all business logic services

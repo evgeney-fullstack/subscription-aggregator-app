@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -26,4 +27,23 @@ type SubscriptionDB struct {
 	UserID      uuid.UUID `db:"user_id"`      // User identifier as UUID
 	StartDate   time.Time `db:"start_date"`   // Start date as timestamp
 	FinishDate  time.Time `db:"finish_date"`  // End date as timestamp
+}
+
+// UpdateSubscription defines the structure for subscription update requests
+// Uses pointer fields to distinguish between missing values and zero values
+// This allows for partial updates (PATCH semantics) where only provided fields are updated
+type UpdateSubscription struct {
+	Price     *int    `json:"price" `     // Optional new price value (pointer allows nil for no update)
+	StartDate *string `json:"start_date"` // Optional new start date in "MM-YYYY" format
+}
+
+// Validate ensures the update request contains at least one field to update
+// Prevents empty update operations that would make no changes to the resource
+func (i UpdateSubscription) Validate() error {
+	// Check that at least one field is provided for update
+	if i.Price == nil && i.StartDate == nil {
+		return errors.New("update structure has no values")
+	}
+
+	return nil
 }

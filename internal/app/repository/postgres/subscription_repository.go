@@ -3,6 +3,8 @@ package postgres
 import (
 	"errors"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/evgeney-fullstack/subscription-aggregator-app/internal/app/models"
 	"github.com/jmoiron/sqlx"
@@ -89,7 +91,51 @@ func (r *SubscriptionRepository) Delete(subID int) error {
 
 }
 
-// Update implements subscription update logic (to be implemented)
-func (r *SubscriptionRepository) Update() {
+// Update implements subscription update logic with partial update support
+// Handles dynamic SQL query generation based on provided fields
+func (r *SubscriptionRepository) Update(subID int, input models.UpdateSubscription) error {
+	// Initialize slices for building dynamic SET clause and arguments
+	setValues := make([]string, 0)
+	args := make([]interface{}, 0)
+	argId := 1 // Positional parameter counter
 
+	// Handle price update if provided
+	if input.Price != nil {
+		setValues = append(setValues, fmt.Sprintf("price=$%d", argId))
+		args = append(args, *input.Price)
+		argId++
+	}
+
+	// Handle start date update if provided
+	if input.StartDate != nil {
+		setValues = append(setValues, fmt.Sprintf("start_date=$%d", argId))
+
+		// Parse string date to time.Time for database storage
+		startData, err := time.Parse("01-2006", *input.StartDate)
+		if err != nil {
+			return fmt.Errorf("invalid start date format, expected MM-YYYY: %w", err)
+		}
+		args = append(args, startData)
+		argId++
+
+		// Calculate subscription end date (1 month duration from start date)
+		finishDate := startData.AddDate(0, 1, 0)
+		setValues = append(setValues, fmt.Sprintf("finish_date=$%d", argId))
+
+		args = append(args, finishDate)
+		argId++
+	}
+
+	// Join SET clauses with commas
+	setQuery := strings.Join(setValues, ", ")
+
+	// Build final SQL query with WHERE clause
+	query := fmt.Sprintf("UPDATE %s SET %s WHERE id = $%d", subscriptionTable, setQuery, argId)
+
+	// Add subscription ID as the last parameter
+	args = append(args, subID)
+
+	// Execute the query
+	_, err := r.db.Exec(query, args...)
+	return err
 }
