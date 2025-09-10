@@ -1,7 +1,10 @@
 package main
 
 import (
+	"context"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/evgeney-fullstack/subscription-aggregator-app/internal/app/handler"
 	"github.com/evgeney-fullstack/subscription-aggregator-app/internal/app/repository/postgres"
@@ -66,10 +69,32 @@ func main() {
 	// Creating a server instance
 	srv := new(server.Server)
 
-	// Launching an HTTPS server with configuration from environment variables
-	// Using HOST and HOST_PORT from config.env
-	if err := srv.Run(os.Getenv("HOST"), os.Getenv("HOST_PORT"), handlers.InitRoutes()); err != nil {
-		logrus.Fatalf("error occurred while running http server: %s", err.Error())
+	// Launching an HTTP server in a separate goroutine
+	go func() {
+		// Launching an HTTPS server with configuration from environment variables
+		// Using HOST and HOST_PORT from config.env
+		if err := srv.Run(os.Getenv("HOST"), os.Getenv("HOST_PORT"), handlers.InitRoutes()); err != nil {
+			logrus.Fatalf("error occurred while running http server: %s", err.Error())
+		}
+	}()
+
+	logrus.Print("SubscriptionAggregatorApp Started")
+
+	// Channel for processing termination signals
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT) // Waiting for completion signals
+	<-quit                                               // Blocking until the signal is received
+
+	logrus.Print("SubscriptionAggregatorApp Shutting Down")
+
+	// Graceful server shutdown
+	if err := srv.Shutdown(context.Background()); err != nil {
+		logrus.Errorf("error occurred on server shutting down: %s", err.Error())
+	}
+
+	// Closing the DATABASE connection
+	if err := db.Close(); err != nil {
+		logrus.Errorf("error occurred on db connection close: %s", err.Error())
 	}
 
 }
