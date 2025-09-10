@@ -10,6 +10,16 @@ import (
 
 // createSubscription handles HTTP POST request for creating a new subscription
 // This is the API endpoint handler for subscription creation
+// @Summary Create a new subscription
+// @Description Create a new subscription with the input payload
+// @Tags subscriptions
+// @Accept  json
+// @Produce  json
+// @Param input body models.Subscription true "Subscription input"
+// @Success 200 {object} map[string]interface{} "subId"
+// @Failure 400 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Router /subscriptions [post]
 func (h *Handler) createSubscription(c *gin.Context) {
 	// Bind JSON request body to Subscription model
 	// Validates required fields based on 'binding' tags in the model
@@ -44,6 +54,14 @@ type getAllSubResponse struct {
 
 // getAllSubscriptions handles HTTP GET request to retrieve all subscriptions
 // This endpoint returns a list of all subscriptions in the system
+// @Summary Get all subscriptions
+// @Description Get all subscriptions
+// @Tags subscriptions
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} getAllSubResponse
+// @Failure 500 {object} errorResponse
+// @Router /subscriptions [get]
 func (h *Handler) getAllSubscriptions(c *gin.Context) {
 	// Retrieve all subscriptions from the service layer
 	subs, err := h.services.SubscriptionStore.GetAll()
@@ -61,6 +79,16 @@ func (h *Handler) getAllSubscriptions(c *gin.Context) {
 
 // getSubscriptionById handles HTTP GET request to retrieve a specific subscription by ID
 // This endpoint returns a single subscription based on the provided subscription_id parameter
+// @Summary Get subscription by ID
+// @Description Get subscription by ID
+// @Tags subscriptions
+// @Accept  json
+// @Produce  json
+// @Param subscription_id path int true "Subscription ID"
+// @Success 200 {object} models.Subscription
+// @Failure 400 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Router /subscriptions/{subscription_id} [get]
 func (h *Handler) getSubscriptionById(c *gin.Context) {
 	// Extract and convert subscription_id parameter from URL path to integer
 	// The parameter is expected to be in the format: /subscriptions/{subscription_id}
@@ -83,6 +111,17 @@ func (h *Handler) getSubscriptionById(c *gin.Context) {
 	c.JSON(http.StatusOK, sub)
 }
 
+// @Summary Update subscription
+// @Description Update subscription
+// @Tags subscriptions
+// @Accept  json
+// @Produce  json
+// @Param subscription_id path int true "Subscription ID"
+// @Param input body models.UpdateSubscription true "Update input"
+// @Success 200 {object} statusResponse
+// @Failure 400 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Router /subscriptions/{subscription_id} [put]
 func (h *Handler) updateSubscription(c *gin.Context) {
 
 	// Extract and convert subscription_id parameter from URL path to integer
@@ -111,6 +150,16 @@ func (h *Handler) updateSubscription(c *gin.Context) {
 	})
 }
 
+// @Summary Delete subscription
+// @Description Delete subscription
+// @Tags subscriptions
+// @Accept  json
+// @Produce  json
+// @Param subscription_id path int true "Subscription ID"
+// @Success 200 {object} statusResponse
+// @Failure 400 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Router /subscriptions/{subscription_id} [delete]
 func (h *Handler) deleteSubscription(c *gin.Context) {
 	// Extract and convert subscription_id parameter from URL path to integer
 	// The parameter is expected to be in the format: /subscriptions/{subscription_id}
@@ -137,6 +186,16 @@ func (h *Handler) deleteSubscription(c *gin.Context) {
 
 }
 
+// @Summary Get subscription summary
+// @Description Get subscription summary with filters
+// @Tags subscriptions
+// @Accept  json
+// @Produce  json
+// @Param input body models.SubscriptionFilter true "Filter criteria"
+// @Success 200 {object} models.SubscriptionFilter
+// @Failure 400 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Router /subscriptions/total-cost [get]
 func (h *Handler) getSubscriptionSummary(c *gin.Context) {
 
 	var filter models.SubscriptionFilter

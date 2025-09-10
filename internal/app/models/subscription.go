@@ -9,6 +9,7 @@ import (
 
 // Subscription represents the subscription model for API requests/responses
 // Used for JSON marshaling/unmarshaling with string-based date fields
+// @Description Subscription information
 type Subscription struct {
 	Id          int    `json:"id" db:"id"`                      // Unique identifier
 	ServiceName string `json:"service_name" binding:"required"` // Name of the service (required)
@@ -32,6 +33,7 @@ type SubscriptionDB struct {
 // UpdateSubscription defines the structure for subscription update requests
 // Uses pointer fields to distinguish between missing values and zero values
 // This allows for partial updates (PATCH semantics) where only provided fields are updated
+// @Description Subscription update data
 type UpdateSubscription struct {
 	Price     *int    `json:"price" `     // Optional new price value (pointer allows nil for no update)
 	StartDate *string `json:"start_date"` // Optional new start date in "MM-YYYY" format
@@ -50,6 +52,7 @@ func (i UpdateSubscription) Validate() error {
 
 // SubscriptionFilter defines the request/response structure for subscription summary API
 // Used for both input parameters and output response
+// @Description Subscription filter criteria
 type SubscriptionFilter struct {
 	TotalCost int     `json:"total_cost"` // Calculated total cost of subscriptions (output only)
 	Currency  string  `json:"currency"`   // Currency code for the total cost (output only)
