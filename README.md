@@ -89,22 +89,16 @@ curl -X GET "http://localhost:8080/subscriptions/total-cost"
 
   -H "Content-Type: application/json" \
   
-  -d '{
+  -d '{  
   
-  "period": {
-  
-    "start_date": "01-2025",
-    "finish_date": "10-2025"
-    
-  },
-  
-  "filters": {
-  
-    "user_id": "60631fee-2bf1-4721-ae6c-7636679a0cba",
-    "service_name": "Yandex Plus"
-    
-  }
-  
+     "period": {  
+          "start_date": "01-2025",
+          "finish_date": "10-2025"    
+      },  
+     "filters": {  
+          "user_id": "60631fee-2bf1-4721-ae6c-7636679a0cba",
+          "service_name": "Yandex Plus"    
+      }  
   }'
   
 Структура базы данных
@@ -147,21 +141,18 @@ INFO - информационные сообщения
 
 ERROR - ошибки
 
-DEBUG - отладочная информация (включается через переменную окружения)
-
 Swagger документация
 
 После запуска сервиса документация доступна по адресу: http://localhost:8080/swagger/index.html
 
 Миграции
 
-Миграции базы данных находятся в директории migrations/. Для применения миграций используйте 	github.com/golang-migrate/migrate/v4.
+Миграции базы данных находятся в директории migrations/. Для применения миграций используйте github.com/golang-migrate/migrate/v4.
 
 Тестирование
 
 Запуск интеграционных тестов:
 
-bash
 go test -v ./test -run TestIntegration
 
 Автор
