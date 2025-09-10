@@ -3,9 +3,14 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 )
 
 const (
@@ -55,4 +60,27 @@ func NewPostgresDB(cfg Config) (*sqlx.DB, error) {
 	}
 
 	return db, nil
+}
+
+// RunMigrations applies database migrations from the migrations folder.
+// Returns error if migration fails (ignores the case when there are no changes).
+func RunMigrations(db *sqlx.DB) error {
+	// Initialize PostgreSQL driver instance
+	driver, err := postgres.WithInstance(db.DB, &postgres.Config{})
+
+	// Create migrator instance with file-based migrations
+	m, err := migrate.NewWithDatabaseInstance(
+		"file://migrations", // migrations are loaded from filesystem
+		"postgres", driver)
+
+	// Apply all pending migrations (Up)
+	err = m.Up()
+	// Ignore "no change" error (when all migrations are already applied)
+	if err != nil && err != migrate.ErrNoChange {
+		return err
+	}
+
+	// Log success and return
+	log.Println("Migrations applied successfully")
+	return nil
 }
