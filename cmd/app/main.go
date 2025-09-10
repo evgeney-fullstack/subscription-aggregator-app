@@ -13,6 +13,16 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// @title Subscription Aggregator API
+// @version 1.0
+// @description API для агрегатора подписок
+
+// @host localhost:8080
+// @BasePath /
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
 func main() {
 	// Configuring the logs format in JSON for better structuring and compatibility
 	// with monitoring systems (Kibana, Elasticsearch, etc.)

@@ -1,0 +1,281 @@
+basePath: /
+definitions:
+  handler.errorResponse:
+    description: Error response
+    properties:
+      message:
+        type: string
+    type: object
+  handler.getAllSubResponse:
+    properties:
+      data:
+        description: Array of subscription objects
+        items:
+          $ref: '#/definitions/models.Subscription'
+        type: array
+    type: object
+  handler.statusResponse:
+    description: Status response
+    properties:
+      status:
+        type: string
+    type: object
+  models.Filters:
+    properties:
+      service_name:
+        description: Optional filter by service name
+        type: string
+      user_id:
+        description: Optional filter by user ID
+        type: string
+    type: object
+  models.Period:
+    properties:
+      finish_date:
+        description: End date in MM-YYYY format
+        type: string
+      start_date:
+        description: Start date in MM-YYYY format
+        type: string
+    required:
+    - finish_date
+    - start_date
+    type: object
+  models.Subscription:
+    description: Subscription information
+    properties:
+      finish_date:
+        description: End date as timestamp
+        type: string
+      id:
+        description: Unique identifier
+        type: integer
+      price:
+        description: Subscription price (required)
+        type: integer
+      service_name:
+        description: Name of the service (required)
+        type: string
+      start_date:
+        description: Start date in string format (required)
+        type: string
+      user_id:
+        description: User identifier as string (required)
+        type: string
+    required:
+    - price
+    - service_name
+    - start_date
+    - user_id
+    type: object
+  models.SubscriptionFilter:
+    description: Subscription filter criteria
+    properties:
+      currency:
+        description: Currency code for the total cost (output only)
+        type: string
+      filters:
+        allOf:
+        - $ref: '#/definitions/models.Filters'
+        description: Optional filters for the summary (input)
+      period:
+        allOf:
+        - $ref: '#/definitions/models.Period'
+        description: Time period for the summary calculation (input)
+      total_cost:
+        description: Calculated total cost of subscriptions (output only)
+        type: integer
+    type: object
+  models.UpdateSubscription:
+    description: Subscription update data
+    properties:
+      price:
+        description: Optional new price value (pointer allows nil for no update)
+        type: integer
+      start_date:
+        description: Optional new start date in "MM-YYYY" format
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API для агрегатора подписок
+  title: Subscription Aggregator API
+  version: "1.0"
+paths:
+  /subscriptions:
+    get:
+      consumes:
+      - application/json
+      description: Get all subscriptions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.getAllSubResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Get all subscriptions
+      tags:
+      - subscriptions
+    post:
+      consumes:
+      - application/json
+      description: Create a new subscription with the input payload
+      parameters:
+      - description: Subscription input
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.Subscription'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: subId
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Create a new subscription
+      tags:
+      - subscriptions
+  /subscriptions/{subscription_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete subscription
+      parameters:
+      - description: Subscription ID
+        in: path
+        name: subscription_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.statusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Delete subscription
+      tags:
+      - subscriptions
+    get:
+      consumes:
+      - application/json
+      description: Get subscription by ID
+      parameters:
+      - description: Subscription ID
+        in: path
+        name: subscription_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Subscription'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Get subscription by ID
+      tags:
+      - subscriptions
+    put:
+      consumes:
+      - application/json
+      description: Update subscription
+      parameters:
+      - description: Subscription ID
+        in: path
+        name: subscription_id
+        required: true
+        type: integer
+      - description: Update input
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateSubscription'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.statusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Update subscription
+      tags:
+      - subscriptions
+  /subscriptions/total-cost:
+    get:
+      consumes:
+      - application/json
+      description: Get subscription summary with filters
+      parameters:
+      - description: Filter criteria
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.SubscriptionFilter'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SubscriptionFilter'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Get subscription summary
+      tags:
+      - subscriptions
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

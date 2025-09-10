@@ -1,8 +1,11 @@
 package handler
 
 import (
+	_ "github.com/evgeney-fullstack/subscription-aggregator-app/docs"
 	"github.com/evgeney-fullstack/subscription-aggregator-app/internal/app/service"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // Handler handles HTTP requests and manages routing.
@@ -36,6 +39,8 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		subscriptions.DELETE("/:subscription_id", h.deleteSubscription) //Delete a subscription
 		subscriptions.GET("/total-cost", h.getSubscriptionSummary)
 	}
+
+	router.GET("/swagger/doc", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	return router
 }
