@@ -29,6 +29,8 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 	router := gin.New()
 
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	// Create a route group for subscription-related endpoints
 	subscriptions := router.Group("/subscriptions")
 	{
@@ -39,8 +41,6 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		subscriptions.DELETE("/:subscription_id", h.deleteSubscription) //Delete a subscription
 		subscriptions.GET("/total-cost", h.getSubscriptionSummary)
 	}
-
-	router.GET("/swagger/doc", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	return router
 }

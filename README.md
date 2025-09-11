@@ -154,7 +154,7 @@ curl -X GET "http://localhost:8080/subscriptions/total-cost"
 
 Swagger документация:
 
-  - После запуска сервиса документация доступна по адресу: http://localhost:8080/swagger/index.html
+  - После запуска сервиса документация доступна по адресу: https://localhost:8080/swagger/index.html
 
 
 Миграции:
